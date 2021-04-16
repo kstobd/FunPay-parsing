@@ -1,3 +1,4 @@
+import botModule as bot
 import datetime
 from win10toast import ToastNotifier
 import time
@@ -5,15 +6,16 @@ import requests as r
 from bs4 import BeautifulSoup
 
 newData, oldData = '', ''
+minAmount, maxAmount = 100, 10000
+url = "https://funpay.ru/chips/62/"
 while True:
-
     toast = ToastNotifier()
     now = datetime.datetime.now().strftime("%H:%M:%S")
     print("Подходящие лоты на", now )
     
-    allValue, allAmount = [], []
+    allValue, allAmount, Value = [], [], 0.8
     flag = True
-    url = "https://funpay.ru/chips/62/"
+    
     page = r.get(url)
     #print(page.status_code)
 
@@ -28,7 +30,7 @@ while True:
     print("Количество", "Цена", sep = "   ")
     for data in range(len(allAmount)):
         try:
-            if float(allValue[data].text[1:-3]) <= 0.8 and int(allAmount[data].text) > 500:
+            if float(allValue[data].text[1:-3]) <= Value and int(allAmount[data].text) > minAmount and int(allAmount[data].text) < maxAmount:
                 print(allAmount[data].text, allValue[data].text[1:], sep = (abs(len(allAmount[data].text)-13))*" ")
                 if flag:
                     oldData = newData
@@ -41,3 +43,4 @@ while True:
             print(allAmount[data].text, allValue[data].text[1:])
     time.sleep(10)
     print("\n" * 100)
+#bot.polling(none_stop=True)
