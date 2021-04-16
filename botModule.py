@@ -1,7 +1,7 @@
 import telebot
+import requests
 
 bot = telebot.TeleBot('1745359273:AAG2SWO_CsIWNmKPSZHMWXZd2nVhyhQOK2k')
-
 
 
 @bot.message_handler(commands=['start'])
@@ -17,7 +17,7 @@ def get_text_messages(message):
     if message.text.lower() == 'привет':
         bot.send_message(message.from_user.id, 'Привет! Напиши /help')
     elif message.text.lower() == 'url':
-        bot.send_message(message.from_user.id, 'Отправте на товар из FunPay')
+        bot.send_message(message.from_user.id, 'Отправте ссылку на товар из FunPay (вместе с http(s))')
         bot.register_next_step_handler(message, get_url)
     elif message.text.lower() == 'amount':
         bot.send_message(message.from_user.id, 'Отправьте два значения через пробел (1000 10000)')
@@ -29,12 +29,20 @@ def get_text_messages(message):
         bot.send_message(message.from_user.id, 'Не понимаю, что это значит. Введи /help')
 
 def get_url(message):
-    if "funpay.ru" in message.text:
+    try:
         global url
-        url = message.text
-        bot.send_message(message.from_user.id, 'Ссылка успешно обновлена!')
-    else:
-        bot.send_message(message.from_user.id, 'эта ссылка не из FunPay :( Отправь другую!')
+        if "funpay.ru" in message.text:
+            page = requests.get(message.text)
+            if page.status_code == 200: 
+                url = message.text
+                bot.send_message(message.from_user.id, 'Ссылка успешно обновлена!')
+            else:
+                bot.send_message(message.from_user.id, "Сайт не отвечает, попробуйте позднее")
+        else:
+            bot.send_message(message.from_user.id, 'эта ссылка не из FunPay :( Отправь другую!')
+            bot.register_next_step_handler(message, get_url)
+    except BaseException:
+        bot.send_message(message.from_user.id, "Ты что-то ввел не правильно. Введи еще раз")
         bot.register_next_step_handler(message, get_url)
 
 def get_amount(message):

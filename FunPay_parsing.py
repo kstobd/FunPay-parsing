@@ -1,4 +1,4 @@
-import botModule as bot
+#import botModule as botM
 import datetime
 from win10toast import ToastNotifier
 import time
@@ -6,17 +6,19 @@ import requests as r
 from bs4 import BeautifulSoup
 
 newData, oldData = '', ''
-minAmount, maxAmount = 100, 10000
+minAmount, maxAmount, Value = 0, 100000, 2
 url = "https://funpay.ru/chips/62/"
 while True:
     toast = ToastNotifier()
     now = datetime.datetime.now().strftime("%H:%M:%S")
     print("Подходящие лоты на", now )
     
-    allValue, allAmount, Value = [], [], 0.8
+    allAmount, allValue = [], []
     flag = True
-    
     page = r.get(url)
+    if page.status_code != 200:
+        print("Сайт не отвечает")
+        
     #print(page.status_code)
 
     source = BeautifulSoup(page.text, "html.parser") 
@@ -30,13 +32,17 @@ while True:
     print("Количество", "Цена", sep = "   ")
     for data in range(len(allAmount)):
         try:
-            if float(allValue[data].text[1:-3]) <= Value and int(allAmount[data].text) > minAmount and int(allAmount[data].text) < maxAmount:
+            enteredAmount = ""
+            for i in allAmount[data].text:
+                if i.isdigit(): enteredAmount += i
+            if float(allValue[data].text[1:-3]) <= Value and int(enteredAmount) >= minAmount and int(enteredAmount) <= maxAmount:
                 print(allAmount[data].text, allValue[data].text[1:], sep = (abs(len(allAmount[data].text)-13))*" ")
                 if flag:
                     oldData = newData
                     newData = allAmount[data].text, allValue[data].text[1:]
                     if oldData != newData:
-                        toast.show_toast("kst_obd Notification","it's time to buy \n Amount: {0}, Price: {1}".format(allAmount[data].text,allValue[data].text[1:]),duration=10)
+                        #toast.show_toast("kst_obd Notification","it's time to buy \n Amount: {0}, Price: {1}".format(allAmount[data].text,allValue[data].text[1:]),duration=10)
+                        botM.bot.send_message(message.from_user.id, "Обнаружен новый лот по вашим параметорам \nКолличество: {0}, Цена: {1}".format(allAmount[data].text,allValue[data]))
                     flag = False
         except ValueError:
             print('pagenation must by filled!')
