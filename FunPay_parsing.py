@@ -1,5 +1,6 @@
 #import telebot
 import botModule as botM
+from botModule import config
 from _thread import start_new_thread
 import datetime
 from win10toast import ToastNotifier
@@ -7,8 +8,14 @@ import time
 import requests as r
 from bs4 import BeautifulSoup
 
+class config:
+    def __init__(self, minAmount, maxAmount, Value, url):
+        self.minAmount = 0
+        self.maxAmount = 100000
+        self.Value = 2
+        self.url = "https://funpay.ru/chips/62/"
 
-def mainParser(Value, minAmount, maxAmount, url, newData, oldData):
+def mainParser(config.Value, config.minAmount, config.maxAmount, config.url, newData, oldData):
     while True:
         toast = ToastNotifier()
         now = datetime.datetime.now().strftime("%H:%M:%S")
@@ -24,12 +31,11 @@ def mainParser(Value, minAmount, maxAmount, url, newData, oldData):
              'http': '77.232.150.107:4153',
              'http': '20.52.37.89:16379',
              }
-        page = r.get(url, proxies=proxy)
+        page = r.get(config.url, proxies=proxy)
         print(page)
         if page.status_code != 200:
             print("Сайт не отвечает")
         
-        #print(page.status_code)
 
         source = BeautifulSoup(page.text, "html.parser") 
 
@@ -45,14 +51,15 @@ def mainParser(Value, minAmount, maxAmount, url, newData, oldData):
                 enteredAmount = ""
                 for i in allAmount[data].text:
                     if i.isdigit(): enteredAmount += i
-                if float(allValue[data].text[1:-3]) <= Value and int(enteredAmount) >= minAmount and int(enteredAmount) <= maxAmount:
+                if float(allValue[data].text[1:-3]) <= config.Value and int(enteredAmount) >= config.minAmount and int(enteredAmount) <= config.maxAmount:
                     print(allAmount[data].text, allValue[data].text[1:], sep = (abs(len(allAmount[data].text)-13))*" ")
                     if flag:
                         oldData = newData
                         newData = allAmount[data].text, allValue[data].text[1:]
-                        #if oldData != newData:
+                        if oldData != newData:
                             #toast.show_toast("kst_obd Notification","it's time to buy \n Amount: {0}, Price: {1}".format(allAmount[data].text,allValue[data].text[1:]),duration=10)
-                            #botM.bot.send_message(message.from_user.id, "Обнаружен новый лот по вашим параметрам \nКолличество: {0}, Цена: {1}".format(allAmount[data].text,allValue[data]))
+                            botM.bot.send_message(346860800, "Обнаружен новый лот по вашим параметрам \nКоличество: {0}. Цена: {1}".format(allAmount[data].text, allValue[data].text[1:]))
+                            botM.bot.send_message(347767949, "Обнаружен новый лот по вашим параметрам \nКоличество: {0}. Цена: {1}".format(allAmount[data].text, allValue[data].text[1:]))
                         flag = False
             except ValueError:
                 print('pagenation must by filled!')
@@ -60,13 +67,12 @@ def mainParser(Value, minAmount, maxAmount, url, newData, oldData):
         time.sleep(10)
         print("\n" * 100)
 
+
 #message = botM.get_text_messages
 newData, oldData = '', ''   
-minAmount, maxAmount, Value = 0, 100000, 2
-url = "https://funpay.ru/chips/62/"
 
 
-start_new_thread (mainParser, (Value, minAmount, maxAmount, url, newData, oldData))
+start_new_thread (mainParser, (config.Value, config.minAmount, config.maxAmount, config.config.url, newData, oldData))
 
 
 botM.bot.polling(none_stop=True)
