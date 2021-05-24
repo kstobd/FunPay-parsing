@@ -1,13 +1,7 @@
-
+import config
 import telebot
 import requests
 
-class config:
-    def __init__(self, minAmount, maxAmount, Value, url):
-        self.minAmount = 0
-        self.maxAmount = 100000
-        self.Value = 2
-        self.url = "https://funpay.ru/chips/62/"
 
 bot = telebot.TeleBot('1745359273:AAG2SWO_CsIWNmKPSZHMWXZd2nVhyhQOK2k')
 
